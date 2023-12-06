@@ -131,10 +131,42 @@ class NeuralNetwork:
     ReLU_pair = (ReLU, d_ReLU)
 
     @staticmethod
+    def PReLU(alpha):
+        return lambda z: np.where(z>0, z, z*alpha)
+    
+    @staticmethod
+    def d_PReLU(alpha):
+        return lambda z: np.where(z>0, 1, alpha)
+    
+    @staticmethod
+    def PReLU_pair(alpha):
+        return (NeuralNetwork.PReLU(alpha), NeuralNetwork.d_PReLU(alpha))
+    
+    @staticmethod
+    def ELU(alpha):
+        return lambda z: np.where(z>0, z, alpha*(np.exp(z)-1))
+    
+    @staticmethod
+    def d_ELU(alpha):
+        return lambda z: np.where(z>0, 1, alpha*np.exp(z))
+    
+    @staticmethod
+    def ELU_pair(alpha):
+        return (NeuralNetwork.ELU(alpha), NeuralNetwork.d_ELU(alpha))
+    
+    @staticmethod
+    def SELU(z):
+        return 1.0507 * NeuralNetwork.ELU(1.67326)(z)
+
+    @staticmethod
+    def d_SELU(z):
+        return 1.0507 * NeuralNetwork.d_ELU(1.67326)(z)
+    
+    SELU_pair = (SELU, d_SELU)
+
+    @staticmethod
     def softmax(z):
         exps = np.exp(z - np.max(z))
-        if np.nan in exps:
-            print('nan', exps)
         return exps / np.sum(exps)
 
     @staticmethod
@@ -155,11 +187,21 @@ class NeuralNetwork:
     cross_entropy_loss_pair = (cross_entropy_loss, d_cross_entropy_loss)
 
     @staticmethod
-    def squared_loss(a,y):
+    def quadratic_loss(a,y):
         return np.sum(np.square(a-y))
 
     @staticmethod
-    def d_squared_loss(a,y):
+    def d_quadratic_loss(a,y):
         return 2*(a-y)
 
-    squared_loss_pair = (squared_loss, d_squared_loss)
+    quadratic_loss_pair = (quadratic_loss, d_quadratic_loss)
+
+    @staticmethod
+    def absolute_error_loss(a,y):
+        return np.sum(np.abs(a-y))
+    
+    @staticmethod
+    def d_absolute_error_loss(a,y):
+        return np.where(a>y, 1, -1)
+    
+    absolute_error_loss_pair = (absolute_error_loss, d_absolute_error_loss)

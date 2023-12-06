@@ -3,7 +3,7 @@ import numpy as np
 import _pickle
 import gzip
 
-nn = NN([784, 16, 16, 10], [NN.ReLU_pair, NN.ReLU_pair, NN.softmax_pair], NN.cross_entropy_loss_pair, 0.001)
+nn = NN([784, 16, 16, 10], [NN.SELU_pair, NN.PReLU_pair(0.01), NN.softmax_pair], NN.cross_entropy_loss_pair, 0.001)
 
 with gzip.open('mnist.pkl.gz', 'rb') as file:
     (x_train, y_train), (x_test, y_test) = _pickle.load(file)
