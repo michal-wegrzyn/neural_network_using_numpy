@@ -1,9 +1,11 @@
 from NeuralNetwork import NeuralNetwork as NN
+from ActivationFunctions import ActivationFunctions as AFunc
+from LossFunctions import LossFunctions as LFunc
 import numpy as np
 import _pickle
 import gzip
 
-nn = NN([784, 16, 16, 10], [NN.SELU_pair, NN.PReLU_pair(0.01), NN.softmax_pair], NN.cross_entropy_loss_pair, 0.001)
+nn = NN([784, 16, 16, 10], [AFunc.SELU_pair, AFunc.PReLU_pair(0.01), AFunc.softmax_pair], LFunc.cross_entropy_pair, 0.001)
 
 with gzip.open('mnist.pkl.gz', 'rb') as file:
     (x_train, y_train), (x_test, y_test) = _pickle.load(file)
@@ -11,7 +13,7 @@ with gzip.open('mnist.pkl.gz', 'rb') as file:
 x_train = x_train / 255
 x_test = x_test / 255
 
-x_train = [np.pad(x_train[i].reshape(28,28), 1, 'constant', constant_values=0) for i in range(y_train.shape[0])]
+x_train = [np.pad(x_train[i], 1, 'constant', constant_values=0) for i in range(y_train.shape[0])]
 
 train_data = [(x_train[i][1:-1, 1:-1].reshape(784, 1), y_train[i]) for i in range(y_train.shape[0])]
 train_data += [(x_train[i][1:-1, :-2].reshape(784, 1), y_train[i]) for i in range(y_train.shape[0])]
