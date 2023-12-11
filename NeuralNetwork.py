@@ -2,6 +2,9 @@ import numpy as np
 import random
 
 class NeuralNetwork:
+    from ActivationFunctions import ActivationFunctions as AFunc
+    from LossFunctions import LossFunctions as LFunc
+    
     def __init__(self, sizes, activation_functions, loss_function, learning_rate):
         assert len(sizes) == len(activation_functions) + 1
         self.sizes = sizes
