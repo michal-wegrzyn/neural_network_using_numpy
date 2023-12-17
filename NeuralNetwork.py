@@ -5,7 +5,7 @@ class NeuralNetwork:
     from ActivationFunctions import ActivationFunctions as AFunc
     from LossFunctions import LossFunctions as LFunc
     
-    def __init__(self, sizes, activation_functions, loss_function, learning_rate):
+    def __init__(self, sizes, activation_functions, loss_function, learning_rate, predict=np.argmax):
         assert len(sizes) == len(activation_functions) + 1
         self.sizes = sizes
         self.activation_functions = activation_functions
@@ -13,6 +13,7 @@ class NeuralNetwork:
         self.learning_rate = learning_rate
         self.biases = [np.random.rand(size, 1) - 0.5 for size in sizes[1:]]
         self.weights = [np.random.rand(sizes[i+1], sizes[i]) - 0.5 for i in range(len(sizes)-1)]
+        self.predict = predict
 
     def forward_propagation(self, inp):
         inp = np.array(inp).reshape(-1,1)
@@ -37,11 +38,13 @@ class NeuralNetwork:
                 if epoch%show_epoch == 0:
                     print('Epoch', epoch, 'finished')
                     if test_data is not None:
-                        print('Accuracy', self.test_accuracy(test_data))
+                        print('\tPrediction accuracy:', self.prediction_accuracy(test_data))
+                        print('\tAverage loss:', self.average_loss(test_data))
         if show_epoch is not None:
             print('Completed', epochs, 'epochs')
         if test_data is not None:
-            print('Accuracy:', self.test_accuracy(test_data))
+            print('\tPrediction accuracy:', self.prediction_accuracy(test_data))
+            print('\tAverage loss:', self.average_loss(test_data))
 
     def stochastic_gradient_descent(self, batch_of_tests):
         w_sgd = [np.zeros(w.shape) for w in self.weights]
@@ -97,16 +100,30 @@ class NeuralNetwork:
 
     def make_prediction(self, data):
         output = self.forward_propagation(data)
-        max_arg = np.argmax(output)
-        return max_arg
+        prediction = self.predict(output)
+        return prediction
 
-    def test_accuracy(self, tests):
+    def prediction_accuracy(self, tests):
         ok = 0
         for test in tests:
             output = self.make_prediction(test[0])
-            if output == test[1]:
-                ok += 1
+            if type(test[1]) == np.ndarray:
+                if output == self.make_prediction(test[1]):
+                    ok += 1
+            else:
+                if output == test[1]:
+                    ok += 1
         return ok / len(tests)
+    
+    def average_loss(self, tests):
+        total_loss = 0
+        for test in tests:
+            output = self.forward_propagation(test[0])
+            if type(test[1]) == np.ndarray:
+                total_loss += self.loss_function[0](output, test[1])
+            else:
+                total_loss += self.loss_function[0](output, self.one_hot(test[1]))
+        return total_loss / len(tests)
 
     def one_hot(self, ans):
         y = np.zeros((self.sizes[-1], 1))
